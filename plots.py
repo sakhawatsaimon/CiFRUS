@@ -41,22 +41,12 @@ def savefig(filename):
     Path(FIGURE_SAVEDIR).mkdir(parents = True, exist_ok = True)
     plt.savefig('{}/{}.{}'.format(FIGURE_SAVEDIR, filename, FIGURE_FILETYPE), bbox_inches = 'tight')
     
-def latex_highlight_lowest_two(data):
-    attr_smallest = 'font-weight: bold'
-    attr_second_smallest = 'color: ACMblue'
-    is_smallest = data == data.min()
-    is_second_smallest = data == data.nsmallest(2).iloc[-1]
-    mask = is_smallest.astype(int) * 10 + is_second_smallest.astype(int)
-    attr_map = {11: attr_smallest + '; ' + attr_second_smallest, 10: attr_smallest, 1: attr_second_smallest, 0: ''}
-    styles = [attr_map[m] for m in mask]
-    return styles
-    
 def save_table(df, filename, rotate_headers = True, precision = 1):
     if rotate_headers:
         df.columns = ['\\rotatebox{90}{' + c + '}' for c in df.columns]
     df = df.round(precision)
     (df
-     .style.apply(latex_highlight_lowest_two)
+     .style
      .format(precision = precision, na_rep = '')
      .to_latex(filename,
                convert_css=True,
