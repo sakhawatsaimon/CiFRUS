@@ -275,7 +275,10 @@ for i, (dataset_idx, dataset_name, n, m) in enumerate(dataset_info_arr):
     # sort by classifier name
     results = results.loc[classifiers.keys(), :]
     results.to_csv(out_path)
-    print(results.groupby(['classifier', 'augmentation']).mean()['AUC'].unstack().T)
+    try:
+        print(results.groupby(['classifier', 'augmentation']).mean()['AUC'].unstack().T)
+    except:
+        pass
     dataset_endtime = time.time()
     print(f"Dataset time: {format_time(dataset_endtime - dataset_starttime)}")
 endtime = time.time()
