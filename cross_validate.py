@@ -171,7 +171,8 @@ dataset_info_arr = dataset_info.sort_values('samples').reset_index().to_numpy()
 def metrics_from_scores(scores):
     """ Calculate performance metrics from scores """
     metric_df = pd.DataFrame(index = scores.columns,
-                             columns = metrics.keys())
+                             columns = metrics.keys(),
+                             dtype = float)
     y_true = scores['Y_true']
     for metric_name, metric_func in metrics.items():
         for augmenter_name in metric_df.index:
@@ -274,7 +275,7 @@ for i, (dataset_idx, dataset_name, n, m) in enumerate(dataset_info_arr):
     results = results.reorder_levels([1, 0, 2])
     # sort by classifier name
     results = results.loc[classifiers.keys(), :]
-    results.to_csv(out_path)
+    results.to_csv(out_path, float_format = '%.6f')
     try:
         print(results.groupby(['classifier', 'augmentation']).mean()['AUC'].unstack().T)
     except:
