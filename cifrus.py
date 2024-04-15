@@ -275,7 +275,7 @@ class CiFRUS():
                            r = r,
                            include_parents = include_parents)        
         # Predict probabilities for each synthetic instance
-        scores = func_predict_proba(Xv)[:, 1]
+        scores = func_predict_proba(Xv)
         
         # Note: at present, organic instances are implicitly grouped with the
         # synthetic ones in all resample methods. If Xv is shuffled prior to
@@ -285,7 +285,7 @@ class CiFRUS():
         # augmentation and prediction.
         
         # Reshape scores to align each organic instance with associated synthetic instances
-        scores = scores.reshape(nx, -1)
+        scores = scores.reshape(nx, -1, scores.shape[-1])
         # Take column mean to get mean score for each organic instance
         return scores.mean(axis = 1)
     

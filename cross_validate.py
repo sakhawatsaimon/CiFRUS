@@ -252,7 +252,7 @@ for i, (dataset_idx, dataset_name, n, m) in enumerate(dataset_info_arr):
                 # Test on augmented data: CiFRUS (train/test)
                 scores_fold[cifrus_names[1]] = cifrus.resample_predict_proba(clf.predict_proba,
                                                                              X_test,
-                                                                             r = r)
+                                                                             r = r)[:, 1]
                 
                 # Train on balanced augmented data
                 X_train_v, Y_train_v = cifrus.resample_balanced(X_train, Y = Y_train,
@@ -261,7 +261,7 @@ for i, (dataset_idx, dataset_name, n, m) in enumerate(dataset_info_arr):
                 # Test on augmented data: CiFRUS (balanced-train/test)     
                 scores_fold[cifrus_names[2]] = cifrus.resample_predict_proba(clf.predict_proba,
                                                                              X_test,
-                                                                             r = r)
+                                                                             r = r)[:, 1]
                 scores.append(scores_fold)
                 
             # combine all scores and calculate metrics
