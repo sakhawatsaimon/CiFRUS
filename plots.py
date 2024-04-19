@@ -89,10 +89,10 @@ for file in files:
 metrics = pd.concat(metrics, names = ['dataset'] + list(df_metric.index.names))
 metrics = metrics.reorder_levels([1, 0, 3, 2])
 
-mean_metrics = metrics.groupby(['classifier', 'dataset', 'augmentation'], sort = False).mean()
+metric_avg = metrics.groupby(['classifier', 'dataset', 'augmentation'], sort = False).mean()
 
 # make sure the augmenters appear in corret order
-augmenter_order = mean_metrics.groupby(level = [2], sort = False).first().index
+augmenter_order = metric_avg.groupby(level = [2], sort = False).first().index
 classifier_order = metrics.groupby(level = 0, sort = False).first().index
 
 #%% Figure 1: List of benchmarking datasets
@@ -147,19 +147,19 @@ plt.show()
 metric = 'AUC' # AUC | MCC | F1-score | Kappa | balanced-accuracy
 # -----------------------------------------------------------------------------
 
-mean_rank = metrics.copy()
-mean_rank = mean_rank.groupby(level = [0,1,2], sort = False).mean()
-mean_rank.columns.name = 'metric'
-mean_rank = mean_rank.stack().unstack(level = 2)
-mean_rank = (-mean_rank).rank(axis = 1, method = 'min')
-mean_rank = (mean_rank.groupby(['classifier', 'metric']).prod() ** (1/mean_rank.index.levshape[1])).T
-mean_rank = mean_rank.stack(level = 1).reorder_levels([1, 0]).sort_index()
-mean_rank = mean_rank.loc[(mean_rank.index.levels[0], augmenter_order), classifier_order]
+rank_avg = metrics.copy()
+rank_avg = rank_avg.groupby(level = [0,1,2], sort = False).mean()
+rank_avg.columns.name = 'metric'
+rank_avg = rank_avg.stack().unstack(level = 2)
+rank_avg = (-rank_avg).rank(axis = 1, method = 'min')
+rank_avg = (rank_avg.groupby(['classifier', 'metric']).prod() ** (1/rank_avg.index.levshape[1])).T
+rank_avg = rank_avg.stack(level = 1).reorder_levels([1, 0]).sort_index()
+rank_avg = rank_avg.loc[(rank_avg.index.levels[0], augmenter_order), classifier_order]
 
 title = 'Geometric mean rank of {}'.format(metric)
 print('{}\n------------------------------'.format(title))
-print(mean_rank.loc[metric])
-sns.heatmap(mean_rank.loc[metric], annot = True, cmap = "Reds", fmt = ".1f")
+print(rank_avg.loc[metric])
+sns.heatmap(rank_avg.loc[metric], annot = True, cmap = "Reds", fmt = ".1f")
 plt.xticks(rotation = 45, ha = 'right')
 plt.title(title)
 savefig("Table_2_" + metric )
@@ -173,7 +173,7 @@ plt.show()
 # To generate Figure 4:
 metric = ['AUC']
 ## To generate Figure 8:
-# metric = ['MCC', 'F1-score', 'Kappa', 'balanced-accuracy']
+#metric = ['F1-score', 'Kappa', 'balanced-accuracy', 'MCC']
 
 # -----------------------------------------------------------------------------
 
@@ -183,9 +183,9 @@ fig, axes = plt.subplots(nrows = 3, ncols = len(metric), sharex = False,
                                         "wspace": 0.05,
                                         "hspace": 0.1})
 for i, m in enumerate(metric):
-    classifiers = mean_metrics[m].index.levels[0]
+    classifiers = metric_avg[m].index.levels[0]
     
-    df = mean_metrics[m].loc[classifiers, :].unstack(level = 'dataset')
+    df = metric_avg[m].loc[classifiers, :].unstack(level = 'dataset')
     
     dfBaseline = df.loc[(slice(None), 'Baseline'), :]
     dfBaseline = dfBaseline.droplevel(1)
@@ -212,10 +212,10 @@ for i, m in enumerate(metric):
             .rank(method = 'min', ascending = False, axis = 1))
     
     count = (rank == 1).groupby(level = 0, sort = False).sum().T
-    mean_rank = rank.groupby(level = 0, sort = False).mean().T
+    rank_avg = rank.groupby(level = 0, sort = False).mean().T
     
     count = count.loc[augmenter_order, classifier_order]
-    mean_rank = mean_rank.loc[augmenter_order, classifier_order]
+    rank_avg = rank_avg.loc[augmenter_order, classifier_order]
     count_CiFRUS_v_baseline = count_CiFRUS_v_baseline.loc[:, classifier_order]
     count_CiFRUS_v_other = count_CiFRUS_v_other.loc[:, classifier_order]
 
@@ -264,14 +264,14 @@ df = df.groupby(level = [0,1,2], sort = False).mean()
 df.columns.name = 'metric'
 df = df.stack().unstack(level = [0, 2])
 df_rank = (-df).rank(axis = 1, method = 'min')
-mean_rank = (df_rank.groupby('metric').prod() ** (1/df_rank.index.levshape[0])).T
-mean_rank = mean_rank.loc[(classifier_order, augmenter_idx), :]
+rank_avg = (df_rank.groupby('metric').prod() ** (1/df_rank.index.levshape[0])).T
+rank_avg = rank_avg.loc[(classifier_order, augmenter_idx), :]
 
 if WRITE_RESULTS:
-    (mean_rank
+    (rank_avg
       .style.highlight_min(axis=0, props="font-weight:bold;")
       .format(lambda val: "{:.1f}".format(val) if not np.isnan(val) else '')
-      .to_latex('{}/mean_rank_combined_excluding_CiFRUS.txt'.format(FIGURE_SAVEDIR),
+      .to_latex('{}/rank_avg_combined_excluding_CiFRUS.txt'.format(FIGURE_SAVEDIR),
                 convert_css = True,
                 sparse_index = False,
                 hrules = True))
@@ -280,16 +280,16 @@ if WRITE_RESULTS:
 
 # -----------------------------------------------------------------------------
 # Figure options
-classifier = 'ADB' # GNB | KNN | LR | MLP | DT | ADB | RF
+classifier = 'RF' # GNB | KNN | LR | MLP | DT | ADB | RF
 augmenter_name = cifrus_names[2] # 0 | 1 | 2
 # -----------------------------------------------------------------------------
 
 
-fig, axes = plt.subplots(ncols = len(mean_metrics.columns), nrows = 1,
+fig, axes = plt.subplots(ncols = len(metric_avg.columns), nrows = 1,
                          figsize = (12, 1), sharey = True)
 
-for i, (ax, metric) in enumerate(zip(axes.flat, mean_metrics.columns)):
-    df = mean_metrics[metric].loc[classifier, :].unstack(level = 0)
+for i, (ax, metric) in enumerate(zip(axes.flat, metric_avg.columns)):
+    df = metric_avg[metric].loc[classifier, :].unstack(level = 0)
     df = df.loc[augmenter_order, :]
     a = df.iloc[0, :]
     b = df.loc[augmenter_name, :]   
@@ -303,13 +303,13 @@ for i, (ax, metric) in enumerate(zip(axes.flat, mean_metrics.columns)):
     ax.axvline(x = 0, linestyle = '-.', color = '#000', linewidth = 0.5)
 
 plt.subplots_adjust(wspace = 0.1)
-filename = 'metric_diff_between_{}_and_{}_for_{}_compact'.format(a.name,
+filename = 'metric_diff_between_{}_and_{}_for_{}'.format(a.name,
                                                          'CiFRUS',
                                                          classifier)
 savefig(filename)
 plt.show()
 
-#%% Figure 9: Distribution of the differences between metric scores
+#%% Figure 9: Distribution of the differences between metric scores (multiple)
 
 # -----------------------------------------------------------------------------
 # Figure options
@@ -318,14 +318,14 @@ augmenter_name = cifrus_names[2] # 0 | 1 | 2
 # -----------------------------------------------------------------------------
 
 
-fig, axes = plt.subplots(ncols = len(mean_metrics.columns), nrows = len(classifiers),
+fig, axes = plt.subplots(ncols = len(metric_avg.columns), nrows = len(classifiers),
                          figsize = (14, len(classifiers)*1.5), sharey = False, sharex = False,
                          squeeze = False)
 
 for j, (classifier) in enumerate(classifiers):
-    for i, (metric) in enumerate(mean_metrics.columns):
+    for i, (metric) in enumerate(metric_avg.columns):
         ax = axes[j, i]
-        df = mean_metrics[metric].loc[classifier, :].unstack(level = 0)
+        df = metric_avg[metric].loc[classifier, :].unstack(level = 0)
         df = df.loc[augmenter_order, :]
         a = df.iloc[0, :]
         b = df.loc[augmenter_name, :]   
@@ -346,8 +346,8 @@ plt.subplots_adjust(wspace = 0.4, hspace = 0.8)
 fig.add_subplot(111, frameon=False)
 plt.tick_params(labelcolor='none', which='both', top=False, bottom=False, left=False, right=False)
 plt.ylabel("number of datasets")
-filename = 'metric_diff_between_{}_and_{}_for_classifiers_compact'.format(a.name,
-                                                         'CiFRUS')
+filename = 'metric_diff_between_{}_and_{}_for_classifiers'.format(a.name,
+                                                                 'CiFRUS')
 savefig(filename)
 plt.show()
 
@@ -372,14 +372,14 @@ cond = pd.concat({'imbalanced': dataset_info['% minority class'] <= 25,
 cond = cond[cond.any(axis = 1)]
 
 fig, axes = plt.subplots(nrows = len(metric),
-                         ncols = mean_metrics.index.levshape[0],
+                         ncols = metric_avg.index.levshape[0],
                          sharex = True, sharey = True,
-                         figsize = (2.5*mean_metrics.shape[1], 1.5*len(metric)), squeeze = False)
+                         figsize = (2.5*metric_avg.shape[1], 1.5*len(metric)), squeeze = False)
 
-for i, classifier in enumerate(mean_metrics.index.levels[0]):
+for i, classifier in enumerate(metric_avg.index.levels[0]):
     for j, m in enumerate(metric):
         ax = axes[j, i]
-        metric_diff = mean_metrics.loc[classifier, m].unstack(level = 0).loc[:, cond.index].T
+        metric_diff = metric_avg.loc[classifier, m].unstack(level = 0).loc[:, cond.index].T
         metric_diff = metric_diff - metric_diff['Baseline'].values[:, None]
         metric_diff = metric_diff.drop('Baseline', axis = 1)
         
@@ -412,7 +412,7 @@ plt.subplots_adjust(wspace = 0.05, hspace = 0.05)
 savefig('metric_diff_imbalanced_sample_scarce_{}'.format('_'.join(metric)))
 plt.show()
 
-#%% Figure 7, 11: Augmentation methods ranked by both mean and variance of metric
+#%% Figure 7, 11: Augmentation methods ranked by both average and variance of metric
 
 # -----------------------------------------------------------------------------
 # Figure options
@@ -431,19 +431,19 @@ for i, clf in enumerate(classifier):
         ax = axes[i, j]
         
         results = {}
-        colname_mean = 'Avg'
+        colname_avg = 'Avg'
         colname_var = 'Var'
         legend_title = 'Mean rank'
         
-        # mean, variance for all datasets
+        # average, variance for all datasets
         df = metrics.loc[clf, metric]
         var = df.groupby(level = ['dataset', 'augmentation'], sort = False).var().unstack(level = 0)
-        mean = df.groupby(level = ['dataset', 'augmentation'], sort = False).mean().unstack(level = 0)
+        avg = df.groupby(level = ['dataset', 'augmentation'], sort = False).mean().unstack(level = 0)
         rank_var = var.rank(axis = 0).prod(axis = 1) ** (1/var.shape[1])
-        rank_mean = (-mean).rank(axis = 0).prod(axis = 1) ** (1/mean.shape[1])
-        results['All'] = pd.concat({colname_mean: rank_mean, colname_var: rank_var}, axis = 1)
+        rank_avg = (-avg).rank(axis = 0).prod(axis = 1) ** (1/avg.shape[1])
+        results['All'] = pd.concat({colname_avg: rank_avg, colname_var: rank_var}, axis = 1)
         
-        # mean, variance for imbalanced/sample-sparse
+        # average, variance for imbalanced/sample-sparse
         n_minority_samples = dataset_info['samples'] * dataset_info['% minority class'] / 100
         n_features = dataset_info['features']
         
@@ -454,10 +454,10 @@ for i, clf in enumerate(classifier):
         
         dataset_ids = cond.index
         var = df.loc[cond.index].groupby(level = ['dataset', 'augmentation'], sort = False).var().unstack(level = 0)
-        mean = df.loc[cond.index].groupby(level = ['dataset', 'augmentation'], sort = False).mean().unstack(level = 0)
+        avg = df.loc[cond.index].groupby(level = ['dataset', 'augmentation'], sort = False).mean().unstack(level = 0)
         rank_var = var.rank(axis = 0).prod(axis = 1) ** (1/var.shape[1])
-        rank_mean = (-mean).rank(axis = 0).prod(axis = 1) ** (1/mean.shape[1])
-        results['Imbalanced\n or sample-scarce'] = pd.concat({colname_mean: rank_mean, colname_var: rank_var}, axis = 1)
+        rank_avg = (-avg).rank(axis = 0).prod(axis = 1) ** (1/avg.shape[1])
+        results['Imbalanced\n or sample-scarce'] = pd.concat({colname_avg: rank_avg, colname_var: rank_var}, axis = 1)
         results = pd.concat(results, names = ['Datasets', 'Augmentation'])
         
         df = results.unstack(level = 0).reorder_levels([1, 0], axis = 1).sort_index(level = 0, axis = 1)
@@ -489,5 +489,5 @@ fig.add_subplot(111, frameon=False)
 plt.tick_params(labelcolor='none', which='both', top=False, bottom=False, left=False, right=False)
 plt.ylabel("augmentation", labelpad = 120)
 plt.subplots_adjust(wspace = 0.1, hspace = 0.05)
-savefig('mean_variance_all_metrics{}'.format('_{}'.format(classifier[0]) if len(classifier) == 1 else ''))
+savefig('average_variance_all_metrics{}'.format('_{}'.format(classifier[0]) if len(classifier) == 1 else ''))
 plt.show()
