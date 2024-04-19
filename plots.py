@@ -42,6 +42,7 @@ def savefig(filename):
     plt.savefig('{}/{}.{}'.format(FIGURE_SAVEDIR, filename, FIGURE_FILETYPE), bbox_inches = 'tight')
     
 def save_table(df, filename, rotate_headers = True, precision = 1):
+    Path(FIGURE_SAVEDIR).mkdir(parents = True, exist_ok = True)
     if rotate_headers:
         df.columns = ['\\rotatebox{90}{' + c + '}' for c in df.columns]
     df = df.round(precision)
@@ -186,10 +187,10 @@ for i, m in enumerate(metric):
     
     df = mean_metrics[m].loc[classifiers, :].unstack(level = 'dataset')
     
-    dfOrganic = df.loc[(slice(None), 'Organic'), :]
-    dfOrganic = dfOrganic.droplevel(1)
+    dfBaseline = df.loc[(slice(None), 'Baseline'), :]
+    dfBaseline = dfBaseline.droplevel(1)
     dfOther = df.loc[(slice(None), np.setdiff1d(df.index.levels[1],
-                                                ['Organic'] + cifrus_names)),
+                                                ['Baseline'] + cifrus_names)),
                      :]
     dfOther.index = dfOther.index.remove_unused_levels()
     dfCiFRUS = df.loc[(slice(None), cifrus_names), :]
@@ -200,10 +201,10 @@ for i, m in enumerate(metric):
     count_CiFRUS_v_other = pd.DataFrame(count_CiFRUS_v_other,
                               columns = ['CiFRUS (any) outperforms\nor matches other methods']).T
     
-    count_CiFRUS_v_organic = (dfCiFRUS.groupby(level = 0, sort = False).max() >= dfOrganic).sum(axis = 1)
+    count_CiFRUS_v_baseline = (dfCiFRUS.groupby(level = 0, sort = False).max() >= dfBaseline).sum(axis = 1)
     
-    count_CiFRUS_v_organic = pd.DataFrame(count_CiFRUS_v_organic,
-                                          columns = ['CiFRUS (any) outperforms\n or matches organic']).T
+    count_CiFRUS_v_baseline = pd.DataFrame(count_CiFRUS_v_baseline,
+                                          columns = ['CiFRUS (any) outperforms\n or matches baseline']).T
     
     rank = (df
             .stack()
@@ -212,11 +213,10 @@ for i, m in enumerate(metric):
     
     count = (rank == 1).groupby(level = 0, sort = False).sum().T
     mean_rank = rank.groupby(level = 0, sort = False).mean().T
-    count = count.rename({'No imputation': 'Organic'})
     
     count = count.loc[augmenter_order, classifier_order]
     mean_rank = mean_rank.loc[augmenter_order, classifier_order]
-    count_CiFRUS_v_organic = count_CiFRUS_v_organic.loc[:, classifier_order]
+    count_CiFRUS_v_baseline = count_CiFRUS_v_baseline.loc[:, classifier_order]
     count_CiFRUS_v_other = count_CiFRUS_v_other.loc[:, classifier_order]
 
     count = count.rename(index = {'CiFRUS (balanced-train/test)': 'CiFRUS (bal.-train/test)'})
@@ -224,7 +224,7 @@ for i, m in enumerate(metric):
     sns.heatmap(count, cmap = 'Blues_r', annot = True, ax = axes[0, i],
                 cbar = False)
     
-    sns.heatmap(count_CiFRUS_v_organic, cmap = 'Greens_r', annot = True, ax = axes[1, i],
+    sns.heatmap(count_CiFRUS_v_baseline, cmap = 'Greens_r', annot = True, ax = axes[1, i],
                 cbar = False, vmax = df.shape[1], vmin = df.shape[1] // 2)
     
     sns.heatmap(count_CiFRUS_v_other, cmap = 'Greens_r', annot = True, ax = axes[2, i],
@@ -271,7 +271,7 @@ if WRITE_RESULTS:
     (mean_rank
       .style.highlight_min(axis=0, props="font-weight:bold;")
       .format(lambda val: "{:.1f}".format(val) if not np.isnan(val) else '')
-      .to_latex('results/mean_rank_combined_excluding_CiFRUS.txt',
+      .to_latex('{}/mean_rank_combined_excluding_CiFRUS.txt'.format(FIGURE_SAVEDIR),
                 convert_css = True,
                 sparse_index = False,
                 hrules = True))
@@ -380,8 +380,8 @@ for i, classifier in enumerate(mean_metrics.index.levels[0]):
     for j, m in enumerate(metric):
         ax = axes[j, i]
         metric_diff = mean_metrics.loc[classifier, m].unstack(level = 0).loc[:, cond.index].T
-        metric_diff = metric_diff - metric_diff['Organic'].values[:, None]
-        metric_diff = metric_diff.drop('Organic', axis = 1)
+        metric_diff = metric_diff - metric_diff['Baseline'].values[:, None]
+        metric_diff = metric_diff.drop('Baseline', axis = 1)
         
         df = pd.concat([cond, metric_diff], axis = 1)
         

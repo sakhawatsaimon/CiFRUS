@@ -82,11 +82,11 @@ OUTPUT_DIR = Path("./results/performance")
 # If none, use the default specified in CiFRUS
 k_func = None
 
-# Number of synthetic samples per organic sample
+# Number of synthetic samples per real sample
 # Used for CiFRUS (train), CiFRUS (train/test)
 r = 10
 
-# Number of synthetic samples per organic sample of the majority class
+# Number of synthetic samples per real sample of the majority class
 # Used for CiFRUS (balanced-train/test)
 r_majority = 5
 
@@ -224,7 +224,7 @@ for i, (dataset_idx, dataset_name, n, m) in enumerate(dataset_info_arr):
                 scores_fold = pd.DataFrame(Y_test, columns = ['Y_true'])
                 
                 clf.fit(X_train, Y_train)
-                scores_fold['Organic'] = clf.predict_proba(X_test)[:, -1]
+                scores_fold['Baseline'] = clf.predict_proba(X_test)[:, -1]
                 
                 for augmenter_name, augmenter in augmenters.items():
                     try:
@@ -235,7 +235,7 @@ for i, (dataset_idx, dataset_name, n, m) in enumerate(dataset_info_arr):
                         if augmenter_name == 'ADASYN':
                             # ADASYN fails to augment if classes are balanced
                             # Assume no augmentation was done
-                            scores_fold[augmenter_name] = scores_fold['Organic'] 
+                            scores_fold[augmenter_name] = scores_fold['Baseline'] 
                         else:
                             print(e)
                             scores_fold[augmenter_name] = np.nan
@@ -243,22 +243,22 @@ for i, (dataset_idx, dataset_name, n, m) in enumerate(dataset_info_arr):
                 cifrus = CiFRUS(k = k_func, random_state = SEED)
                 cifrus.fit(X_train)
                 
-                # Train on augmented data
+                # Augmented training
                 X_train_v, Y_train_v = cifrus.resample(X_train, Y = Y_train,
                                                        r = r)
                 clf.fit(X_train_v, Y_train_v)
-                # Test on organic data: CiFRUS (train)
+                # Baseline prediction: CiFRUS (train)
                 scores_fold[cifrus_names[0]] = clf.predict_proba(X_test)[:, 1]
-                # Test on augmented data: CiFRUS (train/test)
+                # Ensemble prediction: CiFRUS (train/test)
                 scores_fold[cifrus_names[1]] = cifrus.resample_predict_proba(clf.predict_proba,
                                                                              X_test,
                                                                              r = r)[:, 1]
                 
-                # Train on balanced augmented data
+                # Augmented (balanced) training
                 X_train_v, Y_train_v = cifrus.resample_balanced(X_train, Y = Y_train,
                                                                 r_majority = r_majority)
                 clf.fit(X_train_v, Y_train_v)
-                # Test on augmented data: CiFRUS (balanced-train/test)     
+                # Ensemble prediction: CiFRUS (balanced-train/test)     
                 scores_fold[cifrus_names[2]] = cifrus.resample_predict_proba(clf.predict_proba,
                                                                              X_test,
                                                                              r = r)[:, 1]

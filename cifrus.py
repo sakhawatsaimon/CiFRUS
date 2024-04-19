@@ -63,7 +63,7 @@ class CiFRUS():
         Y : Numpy 1D array, optional
             Class labels for X. The default is None (class labels unknown).
         r : int, optional
-            Number of synthetic instances per organic instance (synthesis rate).
+            Number of synthetic instances per real instance (synthesis rate).
             The default is self.default_synthesis_rate
         include_parents : bool, optional
             If True, then X is returned with synthetic instances. The default
@@ -223,7 +223,7 @@ class CiFRUS():
         Y : Numpy 1D array, optional
             Class labels for X. The default is None (class labels unknown).
         r : int, optional
-            Number of synthetic instances per organic instance (synthesis rate).
+            Number of synthetic instances per real instance (synthesis rate).
             The default is self.default_synthesis_rate
         include_parents : bool, optional
             If True, then X is returned with synthetic instances. The default
@@ -257,7 +257,7 @@ class CiFRUS():
         X : Numpy 1D or 2D array
             Query instance(s) with unknown class label.
         r : int, optional
-            Number of synthetic instances per organic instance (synthesis rate).
+            Number of synthetic instances per real instance (synthesis rate).
             The default is self.default_synthesis_rate
         include_parents : bool, optional
             If True, then X is included with the synthetic instances. The default
@@ -277,16 +277,16 @@ class CiFRUS():
         # Predict probabilities for each synthetic instance
         scores = func_predict_proba(Xv)
         
-        # Note: at present, organic instances are implicitly grouped with the
+        # Note: at present, real instances are implicitly grouped with the
         # synthetic ones in all resample methods. If Xv is shuffled prior to
         # return, or random sampling is done on synthetic instances to achieve
         # exact split of classes, then the the current reshape-based
         # implementation should be replaced with instance-by-instance
         # augmentation and prediction.
         
-        # Reshape scores to align each organic instance with associated synthetic instances
+        # Reshape scores to align each real instance with associated synthetic instances
         scores = scores.reshape(nx, -1, scores.shape[-1])
-        # Take column mean to get mean score for each organic instance
+        # Take column mean to get mean score for each real instance
         return scores.mean(axis = 1)
     
     def resample_predict(self, func_predict, X, r = None, include_parents = True):
@@ -303,7 +303,7 @@ class CiFRUS():
         X : Numpy 1D or 2D array
             Query instance(s) with unknown class label.
         r : int, optional
-            Number of synthetic instances per organic instance (synthesis rate).
+            Number of synthetic instances per real instance (synthesis rate).
             The default is self.default_synthesis_rate
         include_parents : bool, optional
             If True, then X is included with the synthetic instances. The default
@@ -320,16 +320,16 @@ class CiFRUS():
                           include_parents = include_parents)
         # Predict class labels for each augmented instance
         y_pred = func_predict(Xv)
-        # Reshape labels to align each organic instance and associated synthetic instances
+        # Reshape labels to align each real instance and associated synthetic instances
         
-        # Note: at present, organic instances are grouped with the
+        # Note: at present, real instances are grouped with the
         # synthetic ones in all resample methods. If Xv is shuffled prior to
         # return, or random sampling is done on synthetic instances to achieve
         # exact split of classes, then the current implementation, which
         # implicitely assumes that synthetic instances are grouped with their
         # parents, should be replaced.
         
-        # Reshape pred labels to align each organic instance with associated
+        # Reshape pred labels to align each real instance with associated
         # synthetic instances
         y_pred = y_pred.reshape(nx, -1)
         # majority voting decides class label
