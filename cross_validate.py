@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Anonymous submission
+Created on Tue May 23 16:39:15 2023
 
-@author: Anonymous submission
+@author: Tanzira
 """
 
 import pandas as pd
@@ -73,7 +73,7 @@ SEED = 2023
 OVERWRITE_PREVIOUS = False
 
 # Only iterate over each dataset and do not train models if set to True
-DRY_RUN = False
+DRY_RUN = True
 
 # Output directory for results
 OUTPUT_DIR = Path("./results/performance")
