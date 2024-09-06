@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This is the official implementation of the tabular data augmentation method described in the following KDD 2024 paper: [A Novel Feature Space Augmentation Method to Improve Classification Performance and Evaluation Reliability](https://doi.org/10.1145/3637528.3671736). The core augmentation method is class-invariant and supports voting-based prediction of unlabeled instances. Each unlabeled instance can be expanded into a set of augmented instances, follwed by classifier prediction and aggregation of the predicted labels or class probabilities.
+This is the official implementation of the tabular data augmentation method described in the following KDD 2024 paper: [A Novel Feature Space Augmentation Method to Improve Classification Performance and Evaluation Reliability](https://doi.org/10.1145/3637528.3671736). The core augmentation method is class-invariant and supports majority-based prediction of unlabeled instances. Each unlabeled instance can be expanded into a set of augmented instances, followed by classifier prediction and aggregation of the predicted labels or class probabilities.
 
 ## Installation
 
