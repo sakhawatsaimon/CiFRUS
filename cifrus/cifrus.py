@@ -280,7 +280,7 @@ class CiFRUS():
         # Note: at present, real instances are implicitly grouped with the
         # synthetic ones in all resample methods. If Xv is shuffled prior to
         # return, or random sampling is done on synthetic instances to achieve
-        # exact split of classes, then the the current reshape-based
+        # exact split of classes, then the current reshape-based
         # implementation should be replaced with instance-by-instance
         # augmentation and prediction.
         
