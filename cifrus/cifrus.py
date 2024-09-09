@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Anonymous submission
+Created on Tue May 23 2023
 
-@author: Anonymous submission
+@author: sakhawat
 """
-
 import numpy as np
 import pandas as pd
 from scipy.stats import mode
