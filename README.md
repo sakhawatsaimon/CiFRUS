@@ -6,6 +6,16 @@ This is the official implementation of the tabular data augmentation method desc
 
 ## Installation
 
+### Installing with Pip
+
+`CiFRUS` can be installed from [PyPI](https://pypi.org/project/cifrus/) with `pip`:
+
+```
+python -m pip install cifrus
+```
+
+The PyPI package only contains the core augmentation module. To acquire the datasets and code for conducting experiments, please fork this repository.
+
 ### From source
 `cifrus.py` can be directly copied to the project repository.
 
@@ -14,6 +24,7 @@ This is the official implementation of the tabular data augmentation method desc
 `CiFRUS` is compatible with [scikit-learn](https://scikit-learn.org/stable/) and [imbalanced-learn](https://imbalanced-learn.org/stable/). Given feature matrix `X` where each row is a sample and corresponding class labels `y`, augmentation can be performed as follows:
 
 ```
+from cifrus.cifrus import CiFRUS
 cfrs = CiFRUS()
 X_resampled, y_resampled = cfrs.fit_resample(X, y)
 ```
