@@ -3,7 +3,7 @@
 """
 Created on Tue May 23 2023
 
-@author: sakhawat
+@author: Sakhawat
 """
 import numpy as np
 import pandas as pd
