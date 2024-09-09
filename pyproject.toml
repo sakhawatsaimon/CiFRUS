@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cifrus"
+version = "1.0.0"
+authors = [
+  { name="Sakhawat Hossain Saimon"},
+  { name="Tanzira Najnin"},
+  { name="Jianhua Ruan"}
+]
+maintainers = [
+  {name = "Sakhawat Hossain Saimon", email = "sakhawathossain.saimon@utsa.edu"}
+]
+description = "Official implementation of Class-invariante Feature Range Uniform Sampling (CiFRUS)"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy",
+    "scipy"
+]
+
+[project.urls]
+Homepage = "https://github.com/sakhawathossain/CiFRUS"
+Issues = "https://github.com/sakhawathossain/CiFRUS/issues"
