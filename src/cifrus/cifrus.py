@@ -6,7 +6,7 @@ Created on Tue May 23 2023
 @author: Sakhawat
 """
 import numpy as np
-import pandas as pd
+#import pandas as pd
 from scipy.stats import mode
 
 class CiFRUS():
@@ -178,7 +178,7 @@ class CiFRUS():
             Query instance(s) for which synthetic samples should be generated.
         Y : Numpy 1D array
             Class labels for X.
-        R : Union[dict,list,np.ndarray,pd.Series]
+        R : Union[dict,list,np.ndarray]
             Synthesis rate each class in Y. Values must be int.
         include_parents : bool, optional
             If True, then X is returned with synthetic instances. The default
@@ -195,8 +195,8 @@ class CiFRUS():
         assert len(R) == len(labels)
         if isinstance(R, list) or isinstance(R, np.ndarray): 
             R = {k: v for k, v in zip(labels, R)}
-        elif isinstance(R, pd.Series):
-            R = R.to_dict()
+        #elif isinstance(R, pd.Series):
+        #    R = R.to_dict()
         assert all([isinstance(v, (int, np.integer)) for v in R.values()])
             
         Xv, Yv = [], []
