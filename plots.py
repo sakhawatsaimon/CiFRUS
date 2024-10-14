@@ -95,12 +95,15 @@ metric_avg = metrics.groupby(['classifier', 'dataset', 'augmentation'], sort = F
 augmenter_order = metric_avg.groupby(level = [2], sort = False).first().index
 classifier_order = metrics.groupby(level = 0, sort = False).first().index
 
-#%% Figure 1: List of benchmarking datasets
+#%% Figure 3: List of benchmarking datasets
 
+# -----------------------------------------------------------------------------
+# Figure options
 NCOLS = 1
 COLWIDTH = 5
 fontsize = 12
 ir_ticks = [0, 5, 10]
+# -----------------------------------------------------------------------------
 
 chunk_size = int(np.ceil(len(dataset_info) / NCOLS))
 fig, axes = plt.subplots(figsize = (COLWIDTH * NCOLS, 10),
@@ -162,17 +165,17 @@ print(rank_avg.loc[metric])
 sns.heatmap(rank_avg.loc[metric], annot = True, cmap = "Reds", fmt = ".1f")
 plt.xticks(rotation = 45, ha = 'right')
 plt.title(title)
-savefig("Table_2_" + metric )
+savefig("Table_1_" + metric )
 plt.show()
 
-#%% Figure 4, 8: : Number of datasets for which each augmentation tool has best metric value
+#%% Figure 5, 9: : Number of datasets for which each augmentation tool has best metric value
 
 # -----------------------------------------------------------------------------
 # Figure options
 
-# To generate Figure 4:
+# To generate Figure 5:
 metric = ['AUC']
-## To generate Figure 8:
+## To generate Figure 9:
 #metric = ['F1-score', 'Kappa', 'balanced-accuracy', 'MCC']
 
 # -----------------------------------------------------------------------------
@@ -252,9 +255,9 @@ plt.xlabel("classifier")
 savefig('count_best_metric_datasets_RSCV{}'.format('_{}'.format(metric[0]) if len(metric) == 1 else ''))
 plt.show()
 
-#%% Table 4: Classifier-Augmentation paired rank (excluding CiFRUS)
+#%% Unused: Classifier-Augmentation paired rank (excluding CiFRUS)
 
-#metric = 'AUC' # AUC | MCC | F1-score | Kappa | balanced-accuracy
+metric = 'AUC' # AUC | MCC | F1-score | Kappa | balanced-accuracy
 exclude_CiFRUS = True
 
 augmenter_idx = augmenter_order[:-3] if exclude_CiFRUS else augmenter_order
@@ -276,44 +279,11 @@ if WRITE_RESULTS:
                 sparse_index = False,
                 hrules = True))
 
-#%% Figure 5: Distribution of the differences between metric scores
+#%% Figure 9: Distribution of the differences between metric scores
 
 # -----------------------------------------------------------------------------
 # Figure options
-classifier = 'RF' # GNB | KNN | LR | MLP | DT | ADB | RF
-augmenter_name = cifrus_names[2] # 0 | 1 | 2
-# -----------------------------------------------------------------------------
-
-
-fig, axes = plt.subplots(ncols = len(metric_avg.columns), nrows = 1,
-                         figsize = (12, 1), sharey = True)
-
-for i, (ax, metric) in enumerate(zip(axes.flat, metric_avg.columns)):
-    df = metric_avg[metric].loc[classifier, :].unstack(level = 0)
-    df = df.loc[augmenter_order, :]
-    a = df.iloc[0, :]
-    b = df.loc[augmenter_name, :]   
-    pval = ttest_rel(a, b)[1]
-    lim = (b - a).abs().max() * 1.2
-    ax.hist(b - a, color = 'C' + str(i), bins = np.linspace(-lim, lim, 15))
-    
-    ax.set_xlim(-lim, lim)
-    ax.set_xticklabels(ax.get_xticklabels(), rotation = 45)
-    ax.set_xlabel(r'$\Delta$ ' + metric + '\n(p = {:.3f})'.format(pval))
-    ax.axvline(x = 0, linestyle = '-.', color = '#000', linewidth = 0.5)
-
-plt.subplots_adjust(wspace = 0.1)
-filename = 'metric_diff_between_{}_and_{}_for_{}'.format(a.name,
-                                                         'CiFRUS',
-                                                         classifier)
-savefig(filename)
-plt.show()
-
-#%% Figure 9: Distribution of the differences between metric scores (multiple)
-
-# -----------------------------------------------------------------------------
-# Figure options
-classifiers = ['KNN', 'MLP', 'DT', 'ADB', 'RF'] # GNB | KNN | LR | MLP | DT | ADB | RF
+classifiers = ['GNB', 'KNN', 'LR', 'MLP', 'DT', 'ADB', 'RF'] # GNB | KNN | LR | MLP | DT | ADB | RF
 augmenter_name = cifrus_names[2] # 0 | 1 | 2
 # -----------------------------------------------------------------------------
 
@@ -351,14 +321,11 @@ filename = 'metric_diff_between_{}_and_{}_for_classifiers'.format(a.name,
 savefig(filename)
 plt.show()
 
-#%% Figure 6, 10: Imbalanced and sample-scarce dataset with performance difference
+#%% Figure 6: Imbalanced and sample-scarce dataset with performance difference
 
 # -----------------------------------------------------------------------------
 # Figure options
-## To generate Figure 6:
-metric = ['AUC', 'Kappa']
-## To generate Figure 10:
-#metric = ['F1-score', 'balanced-accuracy', 'MCC']  
+metric = ['AUC', 'Kappa', 'F1-score', 'balanced-accuracy', 'MCC']
 threshold = 0.005
 # -----------------------------------------------------------------------------
 
@@ -410,14 +377,14 @@ plt.subplots_adjust(wspace = 0.05, hspace = 0.05)
 savefig('metric_diff_imbalanced_sample_scarce_{}'.format('_'.join(metric)))
 plt.show()
 
-#%% Figure 7, 11: Augmentation methods ranked by both average and variance of metric
+#%% Figure 8, 10: Augmentation methods ranked by both average and variance of metric
 
 # -----------------------------------------------------------------------------
 # Figure options
-## To generate Figure 7:
-classifier = ['RF'] 
-## To generate Figure 11:
-#classifier = ['GNB', 'KNN', 'LR', 'MLP', 'DT', 'ADB'] 
+## To generate Figure 8:
+classifier = ['RF', 'ADB', 'LR'] 
+## To generate Figure 10:
+#classifier = ['GNB', 'KNN', 'MLP', 'DT'] 
 # -----------------------------------------------------------------------------
 
 fig, axes = plt.subplots(ncols = metrics.shape[1], nrows = len(classifier),
