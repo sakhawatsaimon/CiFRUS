@@ -388,10 +388,8 @@ for i, classifier in enumerate(metric_avg.index.levels[0]):
         count_up = (metric_diff >= threshold).sum(axis = 0)
         count_down = (metric_diff < -threshold).sum(axis = 0)
         
-        count = pd.concat({r'$\geq '+str(threshold) + '$ (increased)': count_up,
-                           r'$< -'+str(threshold) + '$ (decreased)': count_down}, axis = 1)
         count = pd.concat({'$ \geq' + str(threshold) + '$': count_up,
-                           '$ \leq' + str(threshold) + '$': count_down}, axis = 1)
+                           '$ \leq -' + str(threshold) + '$': count_down}, axis = 1)
         
         count = count.loc[augmenter_order[1:], :]
         count = count.rename(index = {'CiFRUS (balanced-train/test)': 'CiFRUS (bal.-train/test)'})
