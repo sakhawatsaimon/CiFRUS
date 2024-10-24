@@ -6,7 +6,7 @@ Created on Fri Apr 12 11:35:18 2024
 @author: Sakhawat
 """
 
-from cifrus import CiFRUS
+from cifrus.cifrus import CiFRUS
 from sklearn import datasets
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
