@@ -32,7 +32,7 @@ class CiFRUS():
             self._k_func = lambda X: k
         self.expand_range = expand_range
         self.random_state = random_state
-        self.default_synthesis_rate = 10
+        self.default_synthesis_rate = 5
             
     def _set_random_seed(self):
         if self.random_state is not None:
