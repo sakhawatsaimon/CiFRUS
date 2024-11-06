@@ -6,5 +6,5 @@ Created on Thu Aug  1 10:45:12 2024
 @author: Sakhawat
 """
 
-
-__version__ = "1.0.0"
+from importlib.metadata import version
+__version__ = version("cifrus")
