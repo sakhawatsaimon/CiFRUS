@@ -7,4 +7,7 @@ Created on Thu Aug  1 10:45:12 2024
 """
 
 from importlib.metadata import version
-__version__ = version("cifrus")
+try:
+  __version__ = version("cifrus")
+except:
+  pass
